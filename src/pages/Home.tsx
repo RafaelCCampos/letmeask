@@ -7,13 +7,12 @@ import {Button} from '../components/Button'
 import '../styles/auth.scss'
 
 import { useHistory } from 'react-router-dom'
-import { useContext } from 'react'
-import { AuthContext } from '../App'
+import { useAuth } from '../hooks/useAuth'
 
 export const Home = () => {
     const history = useHistory()
 
-    const { user, signInWithGoogle } = useContext(AuthContext)
+    const { user, signInWithGoogle } = useAuth()
 
     const handleCreateRoom = async () => {
         if (!user) {
