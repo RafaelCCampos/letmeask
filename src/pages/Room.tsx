@@ -8,7 +8,7 @@ import {Button} from '../components/Button'
 import '../styles/room.scss'
 import { FormEvent, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
-import { auth, database } from '../services/firebase'
+import { database } from '../services/firebase'
 import { Question } from '../components/Question'
 import { useRoom } from '../hooks/useRoom'
 

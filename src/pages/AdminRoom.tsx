@@ -1,13 +1,13 @@
-import { useParams } from 'react-router-dom'
+import { useHistory, useParams } from 'react-router-dom'
 import { RoomCode } from '../components/RoomCode'
 
+import deleteImg from '../assets/images/delete.svg'
 import imgLogo from '../assets/images/logo.svg'
 import {Button} from '../components/Button'
 
 
 import '../styles/room.scss'
-import { FormEvent, useState } from 'react'
-import { useAuth } from '../hooks/useAuth'
+//import { useAuth } from '../hooks/useAuth'
 import { database } from '../services/firebase'
 import { Question } from '../components/Question'
 import { useRoom } from '../hooks/useRoom'
@@ -19,34 +19,23 @@ type RoomParams = {
 export const AdminRoom = () => {
     const params = useParams<RoomParams>()
     const roomId = params.id
+    const history = useHistory()
 
-    const { user } = useAuth();
-    const [ newQuestion, setNewQuestion ] = useState('')
+    //const { user } = useAuth();
     const { title, questions } = useRoom(roomId)
 
-    const handleSendClick = async (event: FormEvent) => {
-        event.preventDefault();
-        if(newQuestion.trim() === '') {
-            return
-        }
+    const handleDeleteQuestion = async (questionId: string) => {
+       if (window.confirm('Tem certeza que você deseja excluir esta pergunta?')) {
+           await database.ref(`rooms/${roomId}/questions/${questionId}`).remove()
+       }
+    }
 
-        if(!user) {
-            throw new Error(`You must be logged in`)
-        }
+    const handleEndRoom = async () => {
+        await database.ref(`rooms/${roomId}`).update({
+            closedAt: new Date(),
+        })
 
-        const question = {
-            content: newQuestion,
-            author: {
-                name: user.name,
-                avatar: user.avatar,
-            },
-            isHighlighted: false,
-            isAnswered: false,
-        }
-
-        await database.ref(`rooms/${roomId}/questions`).push(question)
-
-        setNewQuestion('')
+        history.push(`/`)
     }
 
     return (
@@ -56,7 +45,7 @@ export const AdminRoom = () => {
                     <img src={imgLogo} alt="LetMeAsk" />
                     <div>
                         <RoomCode code={roomId}/>
-                        <Button isOutlined>Encerrar a sala</Button>
+                        <Button onClick={handleEndRoom} isOutlined>Encerrar a sala</Button>
                     </div>
                 </div>
             </header>
@@ -68,7 +57,20 @@ export const AdminRoom = () => {
                 </div>  
                 <div className="question-list">
                 {questions.map( question => {
-                    return <Question key={question.id} content={question.content} author={question.author} />;
+                    return (
+                        <Question
+                            key={question.id}
+                            content={question.content}
+                            author={question.author} 
+                        >
+                            <button
+                                type="button"
+                                onClick={() => handleDeleteQuestion(question.id)}
+                            >
+                                <img src={deleteImg} alt="Remover pergunta" />
+                            </button>
+                        </Question>
+                        )
                 })}
                 </div>
             </main>
